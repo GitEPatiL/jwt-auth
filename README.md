@@ -35,23 +35,43 @@
 
 ---
 
-## 🏗️ Architecture
-
 ```mermaid
 graph TD
-    User((User)) -->|Register/Login| API
-    API -->|Validate Credentials| DB[(MongoDB)]
-    API -->|Generate Access Token + Refresh Token| User
+    %% Node Definitions
+    User(("👤 User / Client"))
+    API{{"🚀 Auth API Gateway"}}
+    DB[("🍃 MongoDB / Sessions")]
+    Email(("📧 Email Service"))
 
-    User -->|Access Protected Route (Access Token)| API
-    API -->|Verify Access Token| API
+    subgraph Authentication_Flow ["🔑 Security & Sessions"]
+        User -->|"Register / Login"| API
+        API -->|"Validate & Store"| DB
+        DB -.->|"Success"| API
+        API -->|"Issue JWT Pair"| User
+    end
 
-    User -->|Refresh Token Request| API
-    API -->|Validate Refresh Token (DB)| DB
-    API -->|Issue New Access Token| User
+    subgraph Authorization_Flow ["🛡️ Token Management"]
+        User -->|"Protected Request (id_token)"| API
+        API -->|"Verify Token"| API
+        
+        User -->|"Refresh Request (refresh_token)"| API
+        API -->|"Verify Hash in DB"| DB
+        DB -.->|"Valid Session"| API
+        API -->|"Rotate JWT Pair"| User
+    end
 
-    User -->|Logout| API
-    API -->|Clear Refresh Token| DB
+    subgraph Termination ["🚪 Session Exit"]
+        User -->|"Trigger Logout"| API
+        API -->|"Revoke Session Hash"| DB
+    end
+
+    %% Techy Styling
+    style User fill:#f0f7ff,stroke:#333,stroke-width:2px
+    style API fill:#fff4e6,stroke:#fb8c00,stroke-width:2px,stroke-dasharray: 5 5
+    style DB fill:#e6fcf5,stroke:#099268,stroke-width:2px
+    style Authentication_Flow fill:none,stroke:#ced4da,stroke-dasharray: 3 3
+    style Authorization_Flow fill:none,stroke:#ced4da,stroke-dasharray: 3 3
+    style Termination fill:none,stroke:#ced4da,stroke-dasharray: 3 3
 ```
 
 ---
