@@ -39,16 +39,19 @@
 
 ```mermaid
 graph TD
-    User((User)) -->|Register| API
-    API -->|Generate OTP| DB[(MongoDB)]
-    API -->|Send Email| Gmail[Gmail OAuth2]
-    Gmail -->|OTP Code| User
-    User -->|Verify OTP| API
-    API -->|Update Status| DB
-    User -->|Login| API
-    API -->|Issue Tokens| User
-    User -->|Access Resource| API
-    API -->|Validate JWT| DB
+    User((User)) -->|Register/Login| API
+    API -->|Validate Credentials| DB[(MongoDB)]
+    API -->|Generate Access Token + Refresh Token| User
+
+    User -->|Access Protected Route (Access Token)| API
+    API -->|Verify Access Token| API
+
+    User -->|Refresh Token Request| API
+    API -->|Validate Refresh Token (DB)| DB
+    API -->|Issue New Access Token| User
+
+    User -->|Logout| API
+    API -->|Clear Refresh Token| DB
 ```
 
 ---
